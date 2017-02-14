@@ -14,6 +14,16 @@ module.exports = function() {
       this.moveTo(flag);
     }
 
+    // if (_.isEmpty(target)) {
+    //   // STRUCTURE_WALL
+    //   let t = flag.pos.lookFor(LOOK_STRUCTURES);
+    //   console.log(JSON.stringify(t));
+    // }
+
+    if (_.isEmpty(target)) {
+      target = this.pos.findClosestByRange(FIND_HOSTILE_SPAWNS);
+    }
+
     this.do('attack', target);
   }
 };
