@@ -26,17 +26,20 @@ module.exports = {
 
   // Spawn
   spawn() {
-    // Collect creeps population governed by the spawn aka census
-    Object
-      .keys(Game.spawns)
-      .forEach((spawn) => {
-        Game.spawns[spawn].collectCreepsData();
-      });
+    // Select all fully controlled rooms
+    let controlledRooms = _
+      .values(Game.rooms)
+      .filter(room => room.controller.my == true)
+
+    // Collect creeps population governed by the controller aka census
+    controlledRooms.forEach((room) => {
+        room.controller.collectCreepsData();
+    });
 
     // Then we autoSpawnCreeps
-    for (let name in Game.spawns) {
-      Game.spawns[name].autoSpawnCreeps(this.claims, this.defendFlags);
-    }
+    controlledRooms.forEach((room) => {
+      room.controller.autoSpawnCreeps(this.claims, this.defendFlags);
+    });
   },
 
   run() {

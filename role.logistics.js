@@ -51,28 +51,13 @@ module.exports = function() {
    Remote - Long distance (other room)
   */
 
-  // Get back to home spawn
+  // Get back to home controller room
   if (_.isEmpty(target)) {
-    let spawn = Game.getObjectById(this.memory.spawnId);
+    let controller = Game.getObjectById(this.memory.controllerId);
 
     // Find the room
-    if (spawn && spawn.pos.roomName !== this.room.name) {
-      this.moveTo(spawn, {
-        reusePath: 10
-      });
-
-      return;
-    }
-  }
-
-  // Support home spawn
-  if (_.isEmpty(target)) {
-    let spawn = Game.getObjectById(this.memory.spawnId);
-    spawn = Game.getObjectById(spawn.memory.spawnId);
-
-    // Find the room
-    if (spawn && spawn.pos.roomName !== this.room.name) {
-      this.moveTo(spawn, {
+    if (controller && controller.pos.roomName !== this.room.name) {
+      this.moveTo(controller, {
         reusePath: 10
       });
 

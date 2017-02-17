@@ -56,8 +56,9 @@ StructureSpawn.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
   // Only spawns with a controller level 3 can maintain colonies
   if (level < 3) { return; }
 
-  // Filter claimFlags for this spawn
-  const ownedClaimFlags = claimFlags.filter(f => f.memory.spawnId === this.id);
+  // Filter claimFlags managed by controller
+  const ownedClaimFlags = claimFlags
+    .filter(f => f.memory.controllerId === this.room.controller.id);
 
   // Claimer
   newCreep = this.claimColonies(claimFlags);
@@ -80,7 +81,7 @@ StructureSpawn.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
 // If no logistics are left AND no lorries create a backup creep
 // TODO: Maybe we should check for lorry if its source is in the room?
 StructureSpawn.prototype.maintainSurvival = function() {
-  const counts = this.creepsCounts;
+  const counts = this.room.controller.creepsCounts;
 
 
   // TODO: We have a problem if 2 lorries are in another room!! We kill ourselfs!
@@ -226,8 +227,9 @@ StructureSpawn.prototype.claimColonies = function(claimFlags) {
       .reduce((creep, flag) => {
         if (creep) { return creep; }
 
-        // If the flag is owned by another spawn we don't care
-        if (flag.memory.spawnId && flag.memory.spawnId !== this.id) {
+        // If the flag is owned by another controller we don't care
+        if (flag.memory.controllerId
+        && flag.memory.controllerId !== this.room.controller.id) {
           return creep;
         }
 
@@ -328,27 +330,6 @@ StructureSpawn.prototype.maintainRemoteMining = function(claimFlags) {
  Helpers
 */
 
-// Creeps governed by the spawn
-StructureSpawn.prototype.collectCreepsData = function() {
-  // Get all creeps
-  this.creeps = _
-    .toArray(Game.creeps)
-    .filter(c => c.memory.spawnId === this.id);
-
-  // Collect creeps statistics
-  this.creepsCounts = this.creeps.reduce(function(data, creep) {
-    let role = creep.memory.role;
-
-    data[role] = data[role] ? data[role] + 1 : 1;
-    return data;
-  }, {});
-
-  // Show population per spawn
-  everyTicks(100, () => {
-    Logger.log(this.name, JSON.stringify(this.creepsCounts));
-  });
-};
-
 // Mining
 StructureSpawn.prototype.spawnForMining = function(source, limits = {}) {
   let creep = null;
@@ -387,7 +368,7 @@ StructureSpawn.prototype.spawnForMining = function(source, limits = {}) {
 
 // Spawn a role if limit is not reached (options act as filters)
 StructureSpawn.prototype.spawnFor = function(role, options = {}, limit = 1) {
-  let creeps = this.creeps.filter(c => c.memory.role === role)
+  let creeps = this.room.controller.creeps.filter(c => c.memory.role === role)
 
   // We apply all options to the filter
   if (!_.isEmpty(options)) {
@@ -563,7 +544,7 @@ StructureSpawn.prototype.createCustomCreep = function(role, options = {}) {
   const memory = _.assign({
     role,
     working: false,
-    spawnId: this.id
+    controllerId: this.room.controller.id
   }, options);
   const body = this.bodyFor(role, memory);
 
