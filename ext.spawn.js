@@ -6,6 +6,7 @@ const {
   rememberToFor
 } = require('util.helpers');
 
+StructureSpawn.prototype.rememberTo = rememberTo;
 StructureSpawn.prototype.rememberToFor = rememberToFor;
 
 // The autoSpawn
@@ -512,7 +513,7 @@ StructureSpawn.prototype.bodyFor = function(role, options) {
 
     // If we want to spwan a logistics for 50 ticks but can not because we don't have energy we reduce the energyCapacityAvailable
     if (role === 'logistics') {
-      rememberTo(
+      this.rememberTo(
         () => energyForBalancedCreep = energyCapacityAvailable,
         energyForBalancedCreep > energyCapacityAvailable,
         {
