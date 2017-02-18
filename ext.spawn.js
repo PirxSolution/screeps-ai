@@ -394,7 +394,9 @@ const maxEnergyForBalancedCreepMap = new Map([
   [3, 800],
   [4, 1000],
   [5, 1200],
-  [6, 1200]
+  [6, 1200],
+  [7, 1200],
+  [8, 1200]
 ]);
 
 // Body builder
