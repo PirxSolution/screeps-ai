@@ -18,7 +18,7 @@ module.exports = {
 
     // If enemies are detected set flags
     // TODO: We can do it every 5 ticks
-    this.setDefenseFlags();
+    everyTicks(2, () => this.setDefenseFlags());
 
     // Cleanup memory
     this.cleanup();
@@ -26,17 +26,20 @@ module.exports = {
 
   // Spawn
   spawn() {
-    // Collect creeps population governed by the spawn aka census
-    Object
-      .keys(Game.spawns)
-      .forEach((spawn) => {
-        Game.spawns[spawn].collectCreepsData();
-      });
+    // Select all fully controlled rooms
+    let controlledRooms = _
+      .values(Game.rooms)
+      .filter(room => room.controller.my == true)
+
+    // Collect creeps population governed by the controller aka census
+    controlledRooms.forEach((room) => {
+        room.controller.collectCreepsData();
+    });
 
     // Then we autoSpawnCreeps
-    for (let name in Game.spawns) {
-      Game.spawns[name].autoSpawnCreeps(this.claims, this.defendFlags);
-    }
+    controlledRooms.forEach((room) => {
+      room.controller.autoSpawnCreeps(this.claims, this.defendFlags);
+    });
   },
 
   run() {
@@ -57,26 +60,34 @@ module.exports = {
   },
 
   defendAndRepair() {
+    // Memory.maxWallHits = 350000;
+
     // Increase walls
-    everyTicks(300, function() {
+    everyTicks(400, function() {
+      // TODO: Revisit value
       // TODO: Add logic for more rooms
-      // TODO: Add logic for level
+      // TODO: Pick the right start. It should be arround or a bit over a container
       if (!Memory.maxWallHits) {
         Memory.maxWallHits = 52000;
       }
 
-      // TODO: revisit value
-      Memory.maxWallHits += 1000;
+      // TODO: We should check for walls
+      // TODO: I guess from level 3-5 1000 was a good thing
+      // TODO: if we are on level 5 with the controller in the room we should increase to 1000-2000
+      if (Memory.maxWallHits < 350000) {
+        Memory.maxWallHits += 1000;
+        Logger.log('Increased walls:', Memory.maxWallHits);
+      }
     });
 
-    const towers = _.filter(
-      Game.structures,
-      s => s.structureType === STRUCTURE_TOWER
-    );
-
-    for (let tower of towers) {
-      tower.defend();
-    }
+    _
+      .toArray(Game.structures)
+      .filter(s => s.structureType === STRUCTURE_TOWER)
+      .forEach((tower) => {
+        // TODO: WAR - Add war mode aka factor = 1
+        // TODO: If the energy level is too low set to 0.25 or 0 (collect from rooms)
+        tower.defend()
+      });
   },
 
   // Helper
@@ -92,9 +103,16 @@ module.exports = {
 
   // Defense are represented by RED flags
   setDefenseFlags() {
-    this.claims.forEach(flag => flag.pos.setDefenseFlag());
+    this.claims.forEach((flag) => {
+      // console.log(JSON.stringify(flag.room));
+      if (flag.room) {
+        flag.pos.setDefenseFlag();
+      }
+    });
 
-    this.defendFlags = this.flags.filter(f => f.color === COLOR_RED);
+    this.defendFlags = this.flags.filter((f) => {
+      return f.color === COLOR_RED && f.secondaryColor === COLOR_RED;
+    });
   },
 
   cleanup() {

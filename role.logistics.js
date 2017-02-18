@@ -36,7 +36,7 @@ module.exports = function() {
 
   // Do we have a container next to the spawn
   // TODO: Revisit when we have 2 spawns
-  if (_.isEmpty(target)) {
+  if (_.isEmpty(target) && this.room.hasSpawns()) {
     let spawn = this.room.spawns()[0];
 
     target = containerWithCapacity(spawn.nearContainers());
@@ -51,13 +51,13 @@ module.exports = function() {
    Remote - Long distance (other room)
   */
 
-  // Get back to home spawn
+  // Get back to home controller room
   if (_.isEmpty(target)) {
-    let spawn = Game.getObjectById(this.memory.spawnId);
+    let controller = Game.getObjectById(this.memory.controllerId);
 
     // Find the room
-    if (spawn && spawn.pos.roomName !== this.room.name) {
-      this.moveTo(spawn, {
+    if (controller && controller.pos.roomName !== this.room.name) {
+      this.moveTo(controller, {
         reusePath: 10
       });
 
