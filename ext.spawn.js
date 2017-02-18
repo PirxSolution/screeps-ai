@@ -23,31 +23,31 @@ StructureSpawn.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
 
   // Survive
   newCreep = this.maintainSurvival();
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 
   // Military complex (defendFlags)
   newCreep = this.militaryComplex(defendFlags);
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 
   // Mining
   newCreep = this.maintainLocalMining();
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 
   // Explorer
   newCreep = this.maintainLocalExplorer();
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 
   // Logistics
   newCreep = this.maintainLocalLogistics();
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 
   // Builder
   newCreep = this.maintainLocalBuilder();
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 
   // Builder
   newCreep = this.maintainLocalUpgrader();
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 
   /*
     Remote (claimed rooms)
@@ -62,15 +62,15 @@ StructureSpawn.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
 
   // Claimer
   newCreep = this.claimColonies(claimFlags);
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 
   // Remote explorer
   newCreep = this.maintainRemoteExplorer(ownedClaimFlags);
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 
   // Remote mining
   newCreep = this.maintainRemoteMining(ownedClaimFlags);
-  if (newCreep) { return; }
+  if (newCreep) { return newCreep; }
 };
 
 
@@ -265,13 +265,15 @@ StructureSpawn.prototype.maintainRemoteExplorer = function(claimFlags) {
         let limit = 1;
         let options = { flagName: flag.name };
         let containers = flag.room.containers();
-
+        /*
+        // TODO: and if there are two sources
         // If we don't have 2 containers => increase
         if (containers.length < 2) {
           limit += 1;
         }
-
+        */
         // If we have are GREEN => increase
+        /*
         if (flag.secondaryColor === COLOR_GREEN) {
           limit += 1;
 
@@ -280,6 +282,7 @@ StructureSpawn.prototype.maintainRemoteExplorer = function(claimFlags) {
             limit += 1;
           }
         }
+        */
 
         return this.spawnFor('explorer', options, limit);
       }, undefined);
@@ -302,9 +305,9 @@ StructureSpawn.prototype.maintainRemoteMining = function(claimFlags) {
 
         // If flag room has two miner we don't need to support them anymore
         if (flag.room.hasSpawns()) {
-          let spawn = flag.room.spawns()[0];
+          let controller = flag.room.controller;
 
-          if (spawn.creepsCounts['miner'] >= 2) {
+          if (controller.creepsCounts['miner'] >= 2) {
             limits.miner = 0;
           }
         }

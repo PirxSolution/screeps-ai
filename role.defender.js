@@ -6,8 +6,27 @@ module.exports = function() {
       reusePath: 0
     });
   } else {
-    // TODO: Add heal logic
+  let target;
+
+  // First attack HEAL (TODO: can be dangerous)
+  target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
+    filter: (enemy) => enemy.getActiveBodyparts(HEAL) > 0
+  });
+
+  // Then go for RANGED_ATTACK or ATTACK
+  if (!target) {
+    target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
+      filter: (enemy) => {
+        return enemy.getActiveBodyparts(RANGED_ATTACK) > 0 ||
+          enemy.getActiveBodyparts(ATTACK) > 0
+      }
+    });
+  }
+
+  // Then go for RANGED_ATTACK or ATTACK
+  if (!target) {
     target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+  }
 
     // if (_.isEmpty(target)) {
     //   // STRUCTURE_WALL

@@ -60,7 +60,7 @@ module.exports = {
   },
 
   defendAndRepair() {
-    // Memory.maxWallHits = 350000;
+    Memory.maxWallHits = 50000;
 
     // Increase walls
     everyTicks(400, function() {

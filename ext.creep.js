@@ -107,7 +107,7 @@ Creep.prototype.getEnergy = function(useContainer, useSource, options = {}) {
           let match = [
               STRUCTURE_CONTAINER,
               STRUCTURE_STORAGE
-            ].includes(s.structureType) && s.store[RESOURCE_ENERGY] > 0;
+            ].includes(s.structureType) && s.store[RESOURCE_ENERGY] >= this.carryCapacity;
 
           // If we should use a flagged container
           if (options.flag) {

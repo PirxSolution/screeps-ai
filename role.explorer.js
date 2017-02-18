@@ -19,7 +19,7 @@ module.exports = function() {
   if (!target || target.hits === target.hitsMax) {
     const damageFactor = 0.75;
     target = this.pos.findClosestByPath(FIND_STRUCTURES, {
-      filter: s => s.hits < s.hitsMax * damageFactor
+      filter: s => s.hits < s.hitsMax * damageFactor && s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART
     });
 
     if (target) {
