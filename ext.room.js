@@ -24,7 +24,9 @@ Room.prototype.hasTowers = function() {
 };
 
 Room.prototype.spawns = function() {
-  return this.find(FIND_MY_SPAWNS);
+  return this.find(FIND_MY_SPAWNS, {
+      filter: s => s.isActive()
+  });
 };
 
 Room.prototype.hasSpawns = function() {
