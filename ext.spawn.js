@@ -192,8 +192,28 @@ StructureSpawn.prototype.maintainLocalExplorer = function() {
   let limit = 1;
   let towers = this.room.towers();
 
-  // If we have a tower we don't need an explorer
-  if (towers.length > 0) {
+  // TODO: better reuse of census data
+  // In Strongholds we need explorer to build walls and ramparts
+  if(this.room.isStronghold()) {
+    let allExplorer = _.toArray(Game.creeps).filter(c => {
+        return c.memory.controllerId === this.room.controller.id &&
+            c.memory.role === 'explorer'
+    });
+
+    let roomExplorer = this.room.find(FIND_MY_CREEPS, {
+      filter: (c) => {
+          return !c.memory.hasOwnProperty('flagName')
+          && c.memory.controllerId === this.room.controller.id
+          && c.memory.role === 'explorer'
+      }
+    });
+
+    if(roomExplorer.length < 1) {
+        if(allExplorer) { limit = allExplorer.length + 1; }
+    }
+  }
+  // If we have a tower we don't need an explorer in non stronghold rooms
+  else if (towers.length > 0 && !this.room.hasWalls()) {
     limit = 0;
   }
 
