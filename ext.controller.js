@@ -35,3 +35,12 @@ StructureController.prototype.collectCreepsData = function() {
     Logger.log(this.room.name , JSON.stringify(this.creepsCounts));
   });
 };
+
+StructureController.prototype.claims = function() {
+  return this.room.find(FIND_FLAGS, {
+    filter: (flag) => {
+        return flag.memory.controllerId === this.id &&
+            flag.room.controller.level === 0;
+    }
+  });
+};
