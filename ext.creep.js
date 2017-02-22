@@ -19,6 +19,10 @@ let mangudaiRun = require('role.mangudai');
 let heavyBowmanRun = require('role.heavyBowman');
 let lightBowmanRun = require('role.lightBowman');
 
+let pawnSacrificeRun = require('role.pawnSacrifice');
+let meleeRun = require('role.melee');
+let destroyerRun = require('role.destroyer');
+
 const {
   rememberTo
 } = require('util.helpers');
@@ -57,6 +61,24 @@ Creep.prototype.run = function() {
   // Defender - Run for it!
   if (this.isRole('defender')) {
     defenderRun.call(this);
+    return;
+  }
+  
+  // pawnSacrifice - Run for it!
+  if (this.isRole('pawnSacrifice')) {
+    pawnSacrificeRun.call(this);
+    return;
+  }
+  
+  // melee - Run for it!
+  if (this.isRole('melee')) {
+    meleeRun.call(this);
+    return;
+  }
+  
+  // melee - Run for it!
+  if (this.isRole('destroyer')) {
+    destroyerRun.call(this);
     return;
   }
 
