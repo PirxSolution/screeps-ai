@@ -467,6 +467,61 @@ StructureSpawn.prototype.bodyFor = function(role, options) {
       body = creepBlueprints[role][level - 1];
     }
 
+  // Upgrader
+  } else if (role === 'upgrader') {
+    // TODO: make it more depend on energy available
+    // but to do this we have to combine body creation and creep spawning count
+    /* WIP
+        //1) if there are more than one -> iterate and sum.
+        //2) are they flaged green
+    //let container = this.room.controller.nearContainers(4)[0];
+    //let storage = this.room.controller.nearStorage(6);
+    */
+
+    //TODO: refactor
+
+    if(level < 3) {
+      var addWork = 0;
+      var addCarry = 0;
+      var addMove = 0;
+      var base = 1;
+    }
+
+    if(level == 3) {
+      // 450+300=750
+      addWork = 3;
+      addCarry = 2;
+      addMove = 1;
+    }
+
+    if(level > 3) {
+      // 900+300=1200
+      addWork = 6;
+      addCarry = 4;
+      addMove = 2;
+    }
+
+    body = [];
+    for (let i = 0; i < addWork; i++) {
+      body.push(WORK);
+    }
+
+    for (let i = 0; i < addCarry; i++) {
+      body.push(CARRY);
+    }
+
+    for (let i = 0; i < addMove; i++) {
+      body.push(MOVE);
+    }
+
+    // basic part - 300
+    for (let i = 0; i < base; i++) {
+      body.push(WORK);
+      body.push(WORK);
+      body.push(CARRY);
+      body.push(MOVE);
+    }
+
   // Claimer
   // TODO: I think we don't need the extra MOVE part
   } else if (role === 'claimer') {
