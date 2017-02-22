@@ -7,44 +7,90 @@ module.exports = function() {
    Local - (same room)
   */
 
-  // Towers need energy - the tower manages its energy level
-  if (_.isEmpty(target)) {
-    target = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-      filter: (s) => {
-        return s.structureType === STRUCTURE_TOWER &&
-          s.energy < s.energyCapacity * s.engergyFactor;
+  let underAttack = this.room.underAttack();
+
+  // Define the home
+  let home = Game.getObjectById(this.memory.controllerId).room.name;
+  // Define the claim
+  let claim = Game.getObjectById(this.memory.sourceId).room.name;
+
+  // Rooms which are not home or claim become no energy supply
+  // TODO: exeptions are thinkable
+  if(this.room.name === home || this.room.name == claim) {
+
+    // If we are NOT under attack priorise spawn and extensions
+    if (_.isEmpty(target) && !underAttack) {
+      target = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+        filter: (s) => {
+          return [
+            STRUCTURE_SPAWN,
+            STRUCTURE_EXTENSION,
+          ].includes(s.structureType) && s.energy < s.energyCapacity
+        }
+      });
+    }
+
+    // Towers need energy - the tower manages its energy level
+    if (_.isEmpty(target)) {
+      target = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+        filter: (s) => {
+          return s.structureType === STRUCTURE_TOWER &&
+            s.energy < s.energyCapacity * s.engergyFactor;
+        }
+      });
+    }
+
+    // Spawns and extensions
+    if (_.isEmpty(target)) {
+      target = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+        filter: (s) => {
+          return [
+            STRUCTURE_SPAWN,
+            STRUCTURE_EXTENSION,
+          ].includes(s.structureType) && s.energy < s.energyCapacity
+        }
+      });
+    }
+
+    // Do we have a container
+    if (_.isEmpty(target)) {
+      let targets = [];
+
+      // How much free capacity must the container have
+      let amount = this.carry[RESOURCE_ENERGY] + this.carry[RESOURCE_ENERGY] / 3;
+
+      // Do we have a container next to the spawn
+      // TODO: Revisit when we have 2 spawns
+      if (this.room.hasSpawns()) {
+        let spawn = this.room.spawns()[0];
+        let containers = spawn.nearContainers();
+
+        let selection = containerWithCapacity(containers, amount);
+
+        if(selection) {
+            targets.push(selection);
+        }
       }
-    });
-  }
 
-  // Spawns and extensions
-  if (_.isEmpty(target)) {
-    target = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-      filter: (s) => {
-        return [
-          STRUCTURE_SPAWN,
-          STRUCTURE_EXTENSION,
-        ].includes(s.structureType) && s.energy < s.energyCapacity
+      // Do we have a container next to the controller
+      let containers = this.room.controller.nearContainers(4);
+
+      let selection = containerWithCapacity(containers, amount);
+
+      if(selection) {
+        targets.push(selection);
       }
-    });
-  }
 
-  // Do we have a storage?
-  if (_.isEmpty(target)) {
-    target = this.room.storage;
-  }
+      // Select the nearest container
+      if (_.isEmpty(target) && !_.isEmpty(targets)) {
+        target = this.pos.findClosestByPath(targets);
+      }
+    }
 
-  // Do we have a container next to the spawn
-  // TODO: Revisit when we have 2 spawns
-  if (_.isEmpty(target) && this.room.hasSpawns()) {
-    let spawn = this.room.spawns()[0];
-
-    target = containerWithCapacity(spawn.nearContainers());
-  }
-
-  // Do we have a container next to the controller
-  if (_.isEmpty(target)) {
-    target = containerWithCapacity(this.room.controller.nearContainers());
+    // Do we have a storage? (only in HOME)
+    if (_.isEmpty(target) && this.room.name === home) {
+      target = this.room.storage;
+    }
   }
 
   /*
@@ -73,6 +119,7 @@ module.exports = function() {
   }
 };
 
-function containerWithCapacity(containers) {
-  return _.find(containers, c => c.store[RESOURCE_ENERGY] < c.storeCapacity);
+function containerWithCapacity(containers, amount) {
+  amount = amount || 1;
+  return _.find(containers, c => c.storeCapacity - c.store[RESOURCE_ENERGY] > amount);
 }

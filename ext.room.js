@@ -35,6 +35,11 @@ Room.prototype.hasWalls = function() {
   return !_.isEmpty(this.walls());
 };
 
+Room.prototype.underAttack = function() {
+  let enemys = this.find(FIND_HOSTILE_CREEPS);
+  return !_.isEmpty();
+};
+
 Room.prototype.isStronghold = function() {
     return this.controller.level > 1 && this.controller.my && this.hasWalls()
 };
