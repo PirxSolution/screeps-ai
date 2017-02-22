@@ -14,6 +14,12 @@ Room.prototype.towers = function() {
   });
 };
 
+Room.prototype.extensions = function() {
+  return this.find(FIND_MY_STRUCTURES, {
+    filter: s => s.structureType === STRUCTURE_EXTENSION
+  });
+};
+
 Room.prototype.walls = function() {
   return this.find(FIND_MY_STRUCTURES, {
     filter: (s) => {
@@ -35,6 +41,10 @@ Room.prototype.spawns = function() {
 
 Room.prototype.hasSpawns = function() {
   return !_.isEmpty(this.spawns());
+};
+
+Room.prototype.hasExtensions = function(amount) {
+  return this.extensions().length >= amount;
 };
 
 Room.prototype.hasWalls = function() {

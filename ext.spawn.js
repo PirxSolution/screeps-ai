@@ -233,13 +233,23 @@ StructureSpawn.prototype.maintainLocalExplorer = function() {
 // Upgrader
 // TODO revisit the limit
 StructureSpawn.prototype.maintainLocalUpgrader = function() {
+  let containers = this.room.containers();
+
   const level = this.room.controller.level;
   let limit = level;
 
-  // If we hit level 4 we have the builder as support
-  if (level > 3) {
-    // In level 5 the best limit is 2 maybe we can increase on level 6
-    limit = 2;
+  if(_.isEmpty(containers)) {
+      limit = 0;
+  } else {
+    if (level == 2 && this.room.hasExtensions(5)) {
+        limit = 4;
+    }
+    if (level == 3 && this.room.hasExtensions(10)) {
+        limit = 4;
+    }
+    if (level > 3) {
+        limit = 3;
+    }
   }
 
   return this.spawnFor('upgrader', {}, limit);
