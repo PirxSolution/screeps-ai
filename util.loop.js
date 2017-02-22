@@ -16,6 +16,8 @@ module.exports = {
     // TODO: Find a way to run it everyTicks (we can not save it in memory!)
     this.updateClaims();
 
+    this.updateFlags();
+
     // If enemies are detected set flags
     // TODO: We can do it every 5 ticks
     everyTicks(2, () => this.setDefenseFlags());
@@ -38,7 +40,11 @@ module.exports = {
 
     // Then we autoSpawnCreeps
     controlledRooms.forEach((room) => {
-      room.controller.autoSpawnCreeps(this.claims, this.defendFlags);
+      room.controller.autoSpawnCreeps(
+        this.claims,
+        this.defendFlags,
+        this.attackFlags
+      );
     });
   },
 
@@ -90,9 +96,51 @@ module.exports = {
       });
   },
 
+  attack() {
+    let crusadeFlag = Game.flags['crusade'];
+    let crusadeWithdrawalFlag = Game.flags['crusadeWithdrawal'];
+
+    if(crusadeFlag){
+        if(!crusadeFlag.memory.setUp) {
+            crusadeFlag.memory = {
+                setUp : true,
+                active : false,
+                //goal : 'conquest',
+                tactic : 'sabotageWithDeathblow',
+                tacticalPhase : 1,
+                tacticalWithdrawalTo : 'crusadeWithdrawal',
+                //attackerRooms : ['W83N9', 'W83N8'],
+                //supporterRooms : [],
+                unitTypes : {
+                    pawnSacrifice : [],
+                    melee : []
+                },
+                pawnLimit : 4,
+                meleeLimit : 4
+            }
+        } else {
+            // update
+            for(let type in crusadeFlag.memory.unitTypes) {
+                for(let u in type) {
+                    let creepName = crusadeFlag.memory.unitTypes[type][u];
+                    if(!Game.creeps[creepName]) {
+                        crusadeFlag.memory.unitTypes[type].splice(u, 1);
+                    }
+                }
+            }
+        }
+    }
+  },
+
   // Helper
   flagsToArray() {
     this.flags = _.toArray(Game.flags);
+  },
+
+  updateFlags() {
+    this.attackFlags = this.flags.filter((f) => {
+      return f.color === COLOR_PURPLE && f.secondaryColor === COLOR_PURPLE;
+    });
   },
 
   // Claims are represented by BLUE flags
