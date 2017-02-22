@@ -6,27 +6,8 @@ module.exports = function() {
       reusePath: 0
     });
   } else {
-  let target;
-
-  // First attack HEAL (TODO: can be dangerous)
-  target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
-    filter: (enemy) => enemy.getActiveBodyparts(HEAL) > 0
-  });
-
-  // Then go for RANGED_ATTACK or ATTACK
-  if (!target) {
-    target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
-      filter: (enemy) => {
-        return enemy.getActiveBodyparts(RANGED_ATTACK) > 0 ||
-          enemy.getActiveBodyparts(ATTACK) > 0
-      }
-    });
-  }
-
-  // Then go for RANGED_ATTACK or ATTACK
-  if (!target) {
+    // TODO: Add heal logic
     target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-  }
 
     // if (_.isEmpty(target)) {
     //   // STRUCTURE_WALL
@@ -36,6 +17,15 @@ module.exports = function() {
 
     if (_.isEmpty(target)) {
       target = this.pos.findClosestByRange(FIND_HOSTILE_SPAWNS);
+    }
+
+    if (_.isEmpty(target)) {
+        flag = this.room.find(FIND_FLAGS, {
+            filter: (f) => {
+                return f.color === COLOR_GREY && f.secondaryColor === COLOR_GREY;
+            }
+        })[0];
+        this.moveTo(flag);
     }
 
     this.do('attack', target);
