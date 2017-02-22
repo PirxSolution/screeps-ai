@@ -3,18 +3,14 @@ const {
   everyTicks
 } = require('util.helpers');
 
-StructureController.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
+StructureController.prototype.autoSpawnCreeps = function(claimFlags, defendFlags, attackFlags) {
   let spawns = this.room.find(FIND_MY_SPAWNS);
-  spawns.forEach(function(spawn){
-    if(spawn.spawning) { return; }
 
-    spawn.autoSpawnCreeps(claimFlags, defendFlags);
+  return spawns.reduce((creep, spawn) => {
+      if (creep) { return creep; }
 
-    // to prevent spawning the same creep multiple times we have to update creepsData
-    // between every spawning. To achiive this, we spawn only one time per tick and
-    // room (TODO: better solution)
-    return;
-  });
+      return spawn.autoSpawnCreeps(claimFlags, defendFlags, attackFlags);
+  }, undefined);
 };
 
 /*
@@ -37,5 +33,14 @@ StructureController.prototype.collectCreepsData = function() {
   // Show population per spawn
   everyTicks(100, () => {
     Logger.log(this.room.name , JSON.stringify(this.creepsCounts));
+  });
+};
+
+StructureController.prototype.claims = function() {
+  return this.room.find(FIND_FLAGS, {
+    filter: (flag) => {
+        return flag.memory.controllerId === this.id &&
+            flag.room.controller.level === 0;
+    }
   });
 };

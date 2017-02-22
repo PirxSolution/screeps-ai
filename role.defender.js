@@ -19,6 +19,15 @@ module.exports = function() {
       target = this.pos.findClosestByRange(FIND_HOSTILE_SPAWNS);
     }
 
+    if (_.isEmpty(target)) {
+        flag = this.room.find(FIND_FLAGS, {
+            filter: (f) => {
+                return f.color === COLOR_GREY && f.secondaryColor === COLOR_GREY;
+            }
+        })[0];
+        this.moveTo(flag);
+    }
+
     this.do('attack', target);
   }
 
