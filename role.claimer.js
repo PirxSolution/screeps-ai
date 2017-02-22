@@ -1,5 +1,5 @@
 module.exports = function() {
-  const target = Game.flags[this.memory.flagName];;
+  const target = Game.flags[this.memory.flagName];
   const isNearTo = this.pos.isNearTo(target.pos);
 
   // The first claimer marks the flag as a colony of the controller

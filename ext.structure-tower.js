@@ -24,7 +24,7 @@ StructureTower.prototype.defend = function() {
     });
   }
 
-  // Then go for RANGED_ATTACK or ATTACK
+  // Then go for ALL HOSTILE
   if (!target) {
     target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
   }
