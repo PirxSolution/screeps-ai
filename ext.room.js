@@ -1,3 +1,7 @@
+Room.prototype.constructionSites = function() {
+  return this.find(FIND_MY_CONSTRUCTION_SITES);
+};
+
 Room.prototype.containers = function() {
   return this.find(FIND_STRUCTURES, {
     filter: s => s.structureType === STRUCTURE_CONTAINER
@@ -35,6 +39,14 @@ Room.prototype.hasSpawns = function() {
 
 Room.prototype.hasWalls = function() {
   return !_.isEmpty(this.walls());
+};
+
+Room.prototype.hasConstructionSites = function() {
+  return !_.isEmpty(this.constructionSites());
+};
+
+Room.prototype.hasContainers = function() {
+  return !_.isEmpty(this.containers());
 };
 
 Room.prototype.underAttack = function() {
