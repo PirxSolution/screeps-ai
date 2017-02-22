@@ -10,6 +10,15 @@ Room.prototype.towers = function() {
   });
 };
 
+Room.prototype.walls = function() {
+  return this.find(FIND_MY_STRUCTURES, {
+    filter: (s) => {
+        return s.structureType === STRUCTURE_WALL ||
+        s.structureType === STRUCTURE_RAMPART
+    }
+  });
+};
+
 Room.prototype.hasTowers = function() {
   return !_.isEmpty(this.towers());
 };
@@ -22,3 +31,10 @@ Room.prototype.hasSpawns = function() {
   return !_.isEmpty(this.spawns());
 };
 
+Room.prototype.hasWalls = function() {
+  return !_.isEmpty(this.walls());
+};
+
+Room.prototype.isStronghold = function() {
+    return this.controller.level > 1 && this.controller.my && this.hasWalls()
+};

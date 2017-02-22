@@ -33,14 +33,15 @@ StructureTower.prototype.defend = function() {
   if (target) {
     this.attack(target);
   } else {
-    let maxWallHits = Memory.maxWallHits;
 
-    // TODO: Save the maxWallHits inside the room
-    if (this.room.controller.level < 4) {
-      maxWallHits = 100000;
     }
 
-    // Distribute wall repais (s.hits < 255000)
+    // Repair
+    let maxWallHits = this.room.memory.maxWallHits;
+
+    // structure hits has to fall under the maximal tower reapair capability
+    const maxRepairValue = 800;
+
     target = this.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: (s) => {
         // TODO: STRUCTURE_RAMPART should be prioritized - maybe we should switch under the maxWallHits until they reach a sustainable limit
@@ -52,7 +53,7 @@ StructureTower.prototype.defend = function() {
         ].includes(s.structureType)) {
           return s.hits < maxWallHits && s.hits < s.hitsMax;
         } else {
-          return s.hits < s.hitsMax;
+          return s.hitsMax - s.hits >= maxRepairValue;
         }
       }
     });

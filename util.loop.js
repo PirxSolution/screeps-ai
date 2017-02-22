@@ -60,23 +60,23 @@ module.exports = {
   },
 
   defendAndRepair() {
-    Memory.maxWallHits = 50000;
-
     // Increase walls
     everyTicks(400, function() {
-      // TODO: Revisit value
-      // TODO: Add logic for more rooms
-      // TODO: Pick the right start. It should be arround or a bit over a container
-      if (!Memory.maxWallHits) {
-        Memory.maxWallHits = 52000;
-      }
+      for(let r in Game.rooms) {
+        let room = Game.rooms[r];
 
-      // TODO: We should check for walls
-      // TODO: I guess from level 3-5 1000 was a good thing
-      // TODO: if we are on level 5 with the controller in the room we should increase to 1000-2000
-      if (Memory.maxWallHits < 350000) {
-        Memory.maxWallHits += 1000;
-        Logger.log('Increased walls:', Memory.maxWallHits);
+        if(!room.memory.maxWallHits) {
+          // set initial wall hits
+          // TODO: Test - is this start scenario well adjusted
+          if(room.isStronghold()) {
+            room.memory.maxWallHits = 1000;
+          }
+        }
+        // TODO: review 350000 limit
+        else if(room.memory.maxWallHits < 350000) {
+            room.memory.maxWallHits += 1000;
+            Logger.log('Increased walls in ', room.name,' to:',  room.memory.maxWallHits);
+        }
       }
     });
 
