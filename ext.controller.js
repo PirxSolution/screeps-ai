@@ -7,8 +7,8 @@ StructureController.prototype.autoSpawnCreeps = function(claimFlags, defendFlags
   let spawns = this.room.find(FIND_MY_SPAWNS);
 
   return spawns.reduce((creep, spawn) => {
-      if (creep) { return creep; } 
-      
+      if (creep) { return creep; }
+
       return spawn.autoSpawnCreeps(claimFlags, defendFlags, attackFlags);
   }, undefined);
 };
