@@ -5,25 +5,12 @@ const {
 
 StructureController.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
   let spawns = this.room.find(FIND_MY_SPAWNS);
-  
-    return spawns
-      .reduce((creep, spawn) => {
-        if (creep) { return creep; }
 
-        return spawn.autoSpawnCreeps(claimFlags, defendFlags);
-      }, undefined);
-  /*
-  spawns.forEach(function(spawn){
-    if(spawn.spawning) { return; }
-
-    spawn.autoSpawnCreeps(claimFlags, defendFlags);
-
-    // to prevent spawning the same creep multiple times we have to update creepsData
-    // between every spawning. To achiive this, we spawn only one time per tick and
-    // room (TODO: better solution)
-    return;
-  });
-  */
+  return spawns.reduce((creep, spawn) => {
+      if (creep) { return creep; } 
+      
+      return spawn.autoSpawnCreeps(claimFlags, defendFlags, attackFlags);
+  }, undefined);
 };
 
 /*
