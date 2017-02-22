@@ -305,15 +305,13 @@ StructureSpawn.prototype.maintainRemoteExplorer = function(claimFlags) {
         let limit = 1;
         let options = { flagName: flag.name };
         let containers = flag.room.containers();
-        /*
-        // TODO: and if there are two sources
-        // If we don't have 2 containers => increase
-        if (containers.length < 2) {
+
+        // If we don't have 2 containers and more than 1 source => increase
+        if (containers.length < 2 && flag.room.find(FIND_SOURCES).length > 1) {
           limit += 1;
         }
-        */
-        // If we have are GREEN => increase
-        /*
+
+        // If flag secondary is GREEN => increase
         if (flag.secondaryColor === COLOR_GREEN) {
           limit += 1;
 
@@ -321,8 +319,17 @@ StructureSpawn.prototype.maintainRemoteExplorer = function(claimFlags) {
           if (!flag.room.hasSpawns()) {
             limit += 1;
           }
+
+          // If we have less then 5 extensions => increase
+          if (!flag.room.hasExtensions(5)) {
+            limit += 1;
+          }
+
+          // If we have less then 10 extensions => increase
+          if (!flag.room.hasExtensions(10)) {
+            limit += 1;
+          }
         }
-        */
 
         return this.spawnFor('explorer', options, limit);
       }, undefined);
