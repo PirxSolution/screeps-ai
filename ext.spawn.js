@@ -152,9 +152,10 @@ StructureSpawn.prototype.maintainLocalMining = function() {
 StructureSpawn.prototype.maintainLocalBuilder = function() {
   let limit = 1;
 
+  let constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES);
+
   /*
   TODO: spawn less when sites are roads, walls, ramps
-  let constructionSites = this.room.find(FIND_MY_CONSTRUCTION_SITES);
   if(constructionSites) {
     let sites= constructionSites.length;
     let roads= constructionSites.filter(c => c.structureType === 'road').length;
@@ -165,7 +166,7 @@ StructureSpawn.prototype.maintainLocalBuilder = function() {
   */
 
   // Only spawn if we have construction sites or containers
-  if (!this.room.hasConstructionSites() || !this.room.hasContainer()) {
+  if (!this.room.hasConstructionSites() || !this.room.hasContainers()) {
     limit = 0;
   } else {
     // Increase if we have 4 or more construction sites
