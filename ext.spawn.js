@@ -61,7 +61,7 @@ StructureSpawn.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
     .filter(f => f.memory.controllerId === this.room.controller.id);
 
   // Claimer
-  newCreep = this.claimColonies(claimFlags);
+  newCreep = this.claimColonies(ownedClaimFlags);
   if (newCreep) { return newCreep; }
 
   // Remote explorer
@@ -526,7 +526,7 @@ StructureSpawn.prototype.bodyFor = function(role, options) {
   // TODO: I think we don't need the extra MOVE part
   } else if (role === 'claimer') {
     if (energyCapacityAvailable < 1300) {
-      body = [CLAIM, MOVE, MOVE]; // 700
+      body = [CLAIM, MOVE]; // 650
 
     // If we can build the bigger creap we do
     } else {
