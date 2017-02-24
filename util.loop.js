@@ -37,6 +37,7 @@ module.exports = {
     // Select all fully controlled rooms
     _
       .values(Game.rooms)
+      .filter(room => !_.isEmpty(room.controller))
       .filter(room => room.controller.my == true)
       // Collect creeps population governed by the controller aka census
       .forEach((room) => room.controller.collectCreepsData())
