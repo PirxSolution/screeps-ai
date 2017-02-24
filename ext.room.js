@@ -21,7 +21,7 @@ Room.prototype.extensions = function() {
 };
 
 Room.prototype.walls = function() {
-  return this.find(FIND_MY_STRUCTURES, {
+  return this.find(FIND_STRUCTURES, {
     filter: (s) => {
         return s.structureType === STRUCTURE_WALL ||
         s.structureType === STRUCTURE_RAMPART
