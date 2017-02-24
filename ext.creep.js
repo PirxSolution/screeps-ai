@@ -150,8 +150,11 @@ Creep.prototype.getEnergy = function(useContainer, useSource, options = {}) {
 
 Creep.prototype.collectDroppedEnergy = function() {
   let energy = this.pos.findInRange(FIND_DROPPED_ENERGY, 3)[0];
+  
+  let value = this.carryCapacity / 100;
+  value = value > 10 ? value : 10;
 
-  if (energy && energy.amount > 10) {
+  if (energy && energy.amount > value) {
     return this.do('pickup', energy);
   }
 };
