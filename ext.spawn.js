@@ -118,11 +118,11 @@ StructureSpawn.prototype.militaryComplexDefend = function(defendFlags) {
         let limit = 2;
         let options = { flagName: flag.name };
 
-        let defenders = flag.room.find(FIND_MY_CREEPS, {
-          filter: c => c.isRole('defender')
+        let defenders = _.toArray(Game.creeps).filter( (c) => {
+            return c.isRole('defender') && c.memory.flagName === flag.name
         });
 
-        // If we already have enough defenders in the room
+        // If we already have enough defenders mapped on the flag
         if (defenders.length >= limit) {
           limit = 0;
         }
@@ -280,30 +280,79 @@ StructureSpawn.prototype.maintainLocalExplorer = function() {
 };
 
 // Upgrader
+
 // TODO revisit the limit
+// WIP: this is already under construction, but this code upgrades really fast yet
 StructureSpawn.prototype.maintainLocalUpgrader = function() {
-  let containers = this.room.containers();
+  let upgrader = this.room.find(FIND_MY_CREEPS, {
+    filter: (c) => {
+        return c.memory.controllerId === this.room.controller.id
+        && c.memory.role === 'upgrader'
+    }
+  });
+  let upgraderCount = upgrader.length;
+
+  let storage = this.room.controller.nearStorage(4);
+  let containers = this.room.controller.nearContainers(4);
+  let additional = 0;
+
+  // If we have a storage near the controller
+  if(storage) {
+      let storageEnergy = storage.store[RESOURCE_ENERGY];
+      // and he get´s full --> increase
+      if(storageEnergy >= 10000) {
+          additional += 1;
+      }
+      // and fuller --> increase
+      if(storageEnergy >= 20000) {
+          additional += 1;
+      }
+      // and WOW! --> increase
+      if(storageEnergy >= 40000) {
+          additional += 1;
+      }
+  }
+  else if(!_.isEmpty(containers)) {
+      // TODO: If there are more than one container
+      everyTicks(100, function() {
+        let containerEnergy = containers[0].store[RESOURCE_ENERGY];
+
+        if(containerEnergy > 1333) {
+          // 1333 results from the 'carry + carry * 1/3' condition of logistics (at 500 carryCap)
+          additional = upgraderCount;
+        }
+      });
+  }
 
   const level = this.room.controller.level;
   let limit = level;
 
+  //WIP: This can be refactored after finished adjusting
   if(_.isEmpty(containers)) {
       limit = 0;
   } else {
-    if (level == 2 && this.room.hasExtensions(5)) {
-        limit = 4;
+    if (level == 2) {
+        limit = 1;
+        if(this.room.hasExtensions(5)) {
+            limit += additional;
+        }
     }
-    if (level == 3 && this.room.hasExtensions(10)) {
-        limit = 4;
+    if (level == 3) {
+        limit = 1;
+        if(this.room.hasExtensions(10)) {
+            limit += additional;
+        }
     }
     if (level > 3) {
-        limit = 3;
+        limit = 1;
+        if(this.room.hasExtensions(20)) {
+            limit += additional;
+        }
     }
   }
 
   return this.spawnFor('upgrader', {}, limit);
 };
-
 
 /*
  Remote
@@ -545,25 +594,37 @@ StructureSpawn.prototype.bodyFor = function(role, options) {
 
     //TODO: refactor
 
-    if(level < 3) {
-      var addWork = 0;
-      var addCarry = 0;
-      var addMove = 0;
-      var base = 1;
+    var addWork = 0;
+    var addCarry = 0;
+    var addMove = 0;
+    var base = 1;
+
+    if(level == 2) {
+      // 250+300=550 / 550
+      addWork = 2;
+      addCarry = 1;
+      addMove = 0;
     }
 
-    if(level == 3) {
+    else if(level == 3) {
       // 450+300=750
       addWork = 3;
       addCarry = 2;
       addMove = 1;
     }
 
-    if(level > 3) {
-      // 900+300=1200
-      addWork = 6;
+    else if(level == 4) {
+      // 1000+300=1300 / 1300
+      addWork = 7;
       addCarry = 4;
       addMove = 2;
+    }
+
+    else if(level => 5) {
+      // 1500+300=1800 / 1800
+      addWork = 10;
+      addCarry = 6;
+      addMove = 4;
     }
 
     body = [];

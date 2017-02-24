@@ -8,6 +8,14 @@ const runOrder = {
   lorry: 2
 };
 
+// Prio to runOrder roles
+const sortByRunOrder = function(a, b) {
+  let aCreep = runOrder[a.memory.role] || 10;
+  let bCreep = runOrder[b.memory.role] || 10;
+
+  return aCreep - bCreep;
+};
+
 module.exports = {
   setup() {
     // Convert flags to an array
@@ -29,35 +37,25 @@ module.exports = {
   // Spawn
   spawn() {
     // Select all fully controlled rooms
-    let controlledRooms = _
+    _
       .values(Game.rooms)
+      .filter(room => !_.isEmpty(room.controller))
       .filter(room => room.controller.my == true)
+      // Collect creeps population governed by the controller aka census
+      .forEach((room) => room.controller.collectCreepsData())
+      // Then we autoSpawnCreeps
+      .forEach((room) => {
+        room.controller.autoSpawnCreeps(this.claims, this.defendFlags);
+      });
 
-    // Collect creeps population governed by the controller aka census
-    controlledRooms.forEach((room) => {
-        room.controller.collectCreepsData();
-    });
-
-    // Then we autoSpawnCreeps
-    controlledRooms.forEach((room) => {
-      room.controller.autoSpawnCreeps(
-        this.claims,
-        this.defendFlags,
-        this.attackFlags
-      );
-    });
   },
 
   run() {
     // We sort the creeps by role via runOrder
     _
       .values(Game.creeps)
-      .sort(function(a, b) {
-        let aCreep = runOrder[a.memory.role] || 10;
-        let bCreep = runOrder[b.memory.role] || 10;
-
-        return aCreep - bCreep;
-      })
+      .sort(sortByRunOrder)
+      // TODO: Check if we need the if
       .forEach(function(creep) {
         if (creep) {
           creep.run();
@@ -67,21 +65,42 @@ module.exports = {
 
   defendAndRepair() {
     // Increase walls
-    everyTicks(400, function() {
+    const time = 400;
+    everyTicks(time, function() {
       for(let r in Game.rooms) {
         let room = Game.rooms[r];
 
-        if(!room.memory.maxWallHits) {
+        if(!room.memory.maxWallHits && room.isStronghold()) {
           // set initial wall hits
           // TODO: Test - is this start scenario well adjusted
-          if(room.isStronghold()) {
-            room.memory.maxWallHits = 1000;
-          }
+          room.memory.maxWallHits = 1000;
         }
-        // TODO: review 350000 limit
-        else if(room.memory.maxWallHits < 350000) {
-            room.memory.maxWallHits += 1000;
-            Logger.log('Increased walls in ', room.name,' to:',  room.memory.maxWallHits);
+        else if(room.memory.maxWallHits < 3000000) {
+            var oldLimit = room.memory.maxWallHits;
+            const base = 1000;
+
+            let walls = room.walls().length;
+
+            // We increase the added value by controller level
+            if(room.controller.level == 4) {
+                let value = Math.floor((time / 4) / walls) * base;
+
+                room.memory.maxWallHits += value;
+            }
+            else if(room.controller.level >= 5) {
+                let value = Math.floor((time / 2) / walls) * base;
+
+                room.memory.maxWallHits += value;
+            } else {
+              // Level 1 - 3
+              room.memory.maxWallHits += base;
+            }
+
+            Logger.log(
+              'Increased walls in', room.name,
+              ' from', oldLimit,
+              ' to:', room.memory.maxWallHits
+            );
         }
       }
     });

@@ -31,7 +31,8 @@ module.exports = function() {
     const damageFactor = 0.75;
     // repair walls only up to value
     // explorer try to build before tower
-    const wallValue = this.room.memory.maxWallHits + 10000;
+
+    let wallValue = this.room.memory.maxWallHits ? this.room.memory.maxWallHits + 10000 : 0;
 
     // Select all structures below 'damageFactor'
     // Select all walls & ramps below increased maxWallHits
@@ -44,9 +45,8 @@ module.exports = function() {
     });
 
     if (target) {
-      this.memory.targetId = target.id;
       // Remember all target´s except walls & ramps
-      // TODO: need for a better wall solution
+      // TODO: don´t know if 'don´t remember' is a good way
       if(!(target.structureType == STRUCTURE_WALL
         || target.structureType == STRUCTURE_RAMPART)) {
 

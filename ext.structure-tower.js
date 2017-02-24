@@ -47,7 +47,7 @@ StructureTower.prototype.defend = function() {
     let maxWallHits = this.room.memory.maxWallHits;
 
     // structure hits has to fall under the maximal tower reapair capability
-    const maxRepairValue = 800;
+    const maxRepairValue = 800 * this.room.towers().length;
 
     target = this.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: (s) => {
