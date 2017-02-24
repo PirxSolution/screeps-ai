@@ -8,6 +8,14 @@ const runOrder = {
   lorry: 2
 };
 
+// Prio to runOrder roles
+const sortByRunOrder = function(a, b) {
+  let aCreep = runOrder[a.memory.role] || 10;
+  let bCreep = runOrder[b.memory.role] || 10;
+
+  return aCreep - bCreep;
+};
+
 module.exports = {
   setup() {
     // Convert flags to an array
@@ -27,31 +35,23 @@ module.exports = {
   // Spawn
   spawn() {
     // Select all fully controlled rooms
-    let controlledRooms = _
+    _
       .values(Game.rooms)
       .filter(room => room.controller.my == true)
-
-    // Collect creeps population governed by the controller aka census
-    controlledRooms.forEach((room) => {
-        room.controller.collectCreepsData();
-    });
-
-    // Then we autoSpawnCreeps
-    controlledRooms.forEach((room) => {
-      room.controller.autoSpawnCreeps(this.claims, this.defendFlags);
-    });
+      // Collect creeps population governed by the controller aka census
+      .forEach((room) => room.controller.collectCreepsData())
+      // Then we autoSpawnCreeps
+      .forEach((room) => {
+        room.controller.autoSpawnCreeps(this.claims, this.defendFlags);
+      });
   },
 
   run() {
     // We sort the creeps by role via runOrder
     _
       .values(Game.creeps)
-      .sort(function(a, b) {
-        let aCreep = runOrder[a.memory.role] || 10;
-        let bCreep = runOrder[b.memory.role] || 10;
-
-        return aCreep - bCreep;
-      })
+      .sort(sortByRunOrder)
+      // TODO: Check if we need the if
       .forEach(function(creep) {
         if (creep) {
           creep.run();

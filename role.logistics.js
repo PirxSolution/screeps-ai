@@ -119,7 +119,8 @@ module.exports = function() {
   }
 };
 
-function containerWithCapacity(containers, amount) {
-  amount = amount || 1;
-  return _.find(containers, c => c.storeCapacity - c.store[RESOURCE_ENERGY] > amount);
+function containerWithCapacity(containers, amount = 1) {
+  return containers.find(
+    c => c.storeCapacity - c.store[RESOURCE_ENERGY] > amount
+  );
 }
