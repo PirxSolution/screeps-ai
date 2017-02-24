@@ -15,7 +15,7 @@ module.exports = function() {
   // TODO
   let claimRoom = Game.getObjectById(this.memory.sourceId).room;
   // We have to check if we have access to the claim
-  // Only lorry are having sourceId´s
+  // Only lorry are having sourceIds
   if(claimRoom && this.memory.role == 'lorry') {
     var claimName = claimRoom.name;
   }

@@ -37,17 +37,23 @@ module.exports = {
   // Spawn
   spawn() {
     // Select all fully controlled rooms
-    _
+    let controlledRooms = _
       .values(Game.rooms)
-      .filter(room => !_.isEmpty(room.controller))
       .filter(room => room.controller.my == true)
-      // Collect creeps population governed by the controller aka census
-      .forEach((room) => room.controller.collectCreepsData())
-      // Then we autoSpawnCreeps
-      .forEach((room) => {
-        room.controller.autoSpawnCreeps(this.claims, this.defendFlags);
-      });
 
+    // Collect creeps population governed by the controller aka census
+    controlledRooms.forEach((room) => {
+        room.controller.collectCreepsData();
+    });
+
+    // Then we autoSpawnCreeps
+    controlledRooms.forEach((room) => {
+      room.controller.autoSpawnCreeps(
+        this.claims, 
+        this.defendFlags, 
+        this.attackFlags
+      );
+    });
   },
 
   run() {

@@ -299,7 +299,7 @@ StructureSpawn.prototype.maintainLocalUpgrader = function() {
   // If we have a storage near the controller
   if(storage) {
       let storageEnergy = storage.store[RESOURCE_ENERGY];
-      // and he get´s full --> increase
+      // and he gets full --> increase
       if(storageEnergy >= 10000) {
           additional += 1;
       }

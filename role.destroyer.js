@@ -8,9 +8,13 @@ module.exports = function() {
   } else {
     let target;  
 
-
-    if (_.isEmpty(target)) {
-        target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
+    if(flag.memory.radius == 0) {
+        if (_.isEmpty(target)) {
+            target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
+        }
+    } else {
+        let targets = flag.pos.findInRange(FIND_STRUCTURES, 1);
+        target = this.pos.findClosestByPath(targets);
     }
 
     //this.do('attack', target);
