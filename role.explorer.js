@@ -45,8 +45,8 @@ module.exports = function() {
     });
 
     if (target) {
-      // Remember all target´s except walls & ramps
-      // TODO: don´t know if 'don´t remember' is a good way
+      // Remember all targets except walls & ramps
+      // TODO: dont know if 'dont remember' is a good way
       if(!(target.structureType == STRUCTURE_WALL
         || target.structureType == STRUCTURE_RAMPART)) {
 
