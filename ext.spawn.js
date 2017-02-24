@@ -11,7 +11,7 @@ StructureSpawn.prototype.rememberToFor = rememberToFor;
 
 // The autoSpawn
 // TODO: think about what role needs to be checked every X ticks!
-StructureSpawn.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
+StructureSpawn.prototype.autoSpawnCreeps = function(claimFlags, defendFlags, attackFlags) {
   if (this.spawning) { return; }
 
   let newCreep;
@@ -26,7 +26,11 @@ StructureSpawn.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
   if (newCreep) { return newCreep; }
 
   // Military complex (defendFlags)
-  newCreep = this.militaryComplex(defendFlags);
+  newCreep = this.militaryComplexDefend(defendFlags);
+  if (newCreep) { return newCreep; }
+
+  // Military complex (attackFlags)
+  newCreep = this.militaryComplexAttack(attackFlags);
   if (newCreep) { return newCreep; }
 
   // Mining
@@ -102,7 +106,7 @@ StructureSpawn.prototype.maintainSurvival = function() {
 
 // Military complex
 // We run it every 2 ticks to spawn other creeps as well
-StructureSpawn.prototype.militaryComplex = function(defendFlags) {
+StructureSpawn.prototype.militaryComplexDefend = function(defendFlags) {
   return everyTicks(2, () => {
     if (_.isEmpty(defendFlags)) { return; }
 
@@ -127,6 +131,50 @@ StructureSpawn.prototype.militaryComplex = function(defendFlags) {
       }, undefined);
 
     console.log('Ui! We have to defend our selfs');
+  });
+};
+
+StructureSpawn.prototype.militaryComplexAttack = function(attackFlags) {
+  return everyTicks(2, () => {
+    if (_.isEmpty(attackFlags)) { return; }
+
+    return attackFlags
+      .reduce((creep, flag) => {
+        if (creep) { return creep; }
+
+        if(flag.memory.active && flag.memory.tactic == 'destroy') {
+            let limit = flag.memory.limit;
+            let options = { flagName: flag.name };
+            return this.spawnForMilitary('destroyer', options, limit);
+        }
+
+        if(flag.memory.active && flag.memory.tactic == 'sabotageWithDeathblow') {
+            let creep = null;
+            let limit = 0;
+            let options = { flagName: flag.name };
+
+            limit = flag.memory.pawnLimit;
+            if(flag.memory.unitTypes.pawnSacrifice.length < limit) {
+              creep = this.spawnForMilitary('pawnSacrifice', options, limit);
+
+              if(creep) {
+                flag.memory.unitTypes.pawnSacrifice.push(creep);
+              }
+            }
+
+            limit = flag.memory.meleeLimit;
+            if(flag.memory.unitTypes.melee.length < limit) {
+              creep = this.spawnForMilitary('melee', options, limit);
+
+              if(creep) {
+                flag.memory.unitTypes.melee.push(creep);
+              }
+            }
+
+            return creep;
+        }
+      }, undefined);
+    console.log('Support our offensive');
   });
 };
 
@@ -483,6 +531,22 @@ StructureSpawn.prototype.spawnFor = function(role, options = {}, limit = 1) {
   }
 };
 
+StructureSpawn.prototype.spawnForMilitary = function(role, options = {}, limit = 1) {
+  let creeps = this.room.controller.creeps.filter(c => c.memory.role === role)
+
+  // We apply all options to the filter
+  if (!_.isEmpty(options)) {
+    let keys = Object.keys(options);
+
+    creeps = creeps
+      .filter(c => keys.map(k => c.memory[k] === options[k]).every(v => v))
+  }
+
+  if (creeps.length < limit) {
+    return this.createCustomCreep(role, options);
+  }
+};
+
 // Blueprints
 // Usefull for developing new roles
 const creepBlueprints = Object.create(null);
@@ -610,14 +674,16 @@ StructureSpawn.prototype.bodyFor = function(role, options) {
     for (let i = 0; i < parts; i++) {
       body.push(TOUGH);
     }
-
-    for (let i = 0; i < parts; i++) {
-      body.push(ATTACK);
-    }
+    // COMMIT: better positioning of attack parts (fight until the end)
+    // TODO: code it pirx!
 
     // Even on swamp we have a walk time of 3
     for (let i = 0; i < parts * 2; i++) {
       body.push(MOVE);
+    }
+
+    for (let i = 0; i < parts; i++) {
+      body.push(ATTACK);
     }
 
   // Lorries
@@ -656,6 +722,129 @@ StructureSpawn.prototype.bodyFor = function(role, options) {
 
   // TODO: remote explorer (options.flagName) need to have ATTACK
   // } else if (role === 'explorer') {
+
+  // pawn
+  } else if (role === 'pawnSacrifice') {
+    // Max energy
+    let energy = 1290;
+    if (energy > energyCapacityAvailable) {
+      energy = energyCapacityAvailable;
+    }
+
+    // A pawn to absorb energy from towers
+    //parts = Math.floor(energy / 70);
+
+    body = [];
+    for (let i = 0; i < 2; i++) {
+      body.push(TOUGH);
+    }
+
+    // Even on swamp we have a walk time of 3
+    for (let i = 0; i < 5; i++) {
+      body.push(MOVE);
+    }
+
+    for (let i = 0; i < 4; i++) {
+      body.push(HEAL);
+    }
+     /*
+    // Max energy
+    let energy = 1300;
+    if (energy > energyCapacityAvailable) {
+      energy = energyCapacityAvailable;
+    }
+
+    // A pawn to absorb energy from towers
+    //parts = Math.floor(energy / 70);
+    parts = 14;
+
+    body = [];
+    for (let i = 0; i < parts; i++) {
+      body.push(TOUGH);
+    }
+
+    // Even on swamp we have a walk time of 3
+    for (let i = 0; i < parts; i++) {
+      body.push(MOVE);
+    }
+
+    for (let i = 0; i < 1; i++) {
+      body.push(HEAL);
+      body.push(MOVE);
+    }
+    */
+  // melee
+  } else if (role === 'melee') {
+    // Max energy
+    let energy = 1140;
+    if (energy > energyCapacityAvailable) {
+      energy = energyCapacityAvailable;
+    }
+
+    // A light armored melee
+    //parts = Math.floor(energy / 70);
+    let armor = 2; // 2
+    let attack = 5; // 5
+
+    body = [];
+    for (let i = 0; i < armor; i++) {
+      body.push(TOUGH);
+      body.push(MOVE);
+    }
+
+    // Even on swamp we have a walk time of 3
+    for (let i = 0; i < attack; i++) {
+      body.push(MOVE);
+      body.push(ATTACK);
+    }
+
+  // destroyer
+  } else if (role === 'destroyer') {
+    // Max energy
+    let energy = 1200;
+    if (energy > energyCapacityAvailable) {
+      energy = energyCapacityAvailable;
+    }
+
+    // A destroyer
+    //parts = Math.floor(energy / 150);
+    parts = 8;
+
+    body = [];
+    for (let i = 0; i < parts; i++) {
+      body.push(WORK);StructureSpawn.prototype.maintainLocalExplorer = function() {
+  let limit = 1;
+  let towers = this.room.towers();
+
+  // TODO: better reuse of census data
+  // In Strongholds we need explorer to build walls and ramparts
+  if(this.room.isStronghold()) {
+    let allExplorer = _.toArray(Game.creeps).filter(c => {
+        return c.memory.controllerId === this.room.controller.id &&
+            c.memory.role === 'explorer'
+    });
+
+    let roomExplorer = this.room.find(FIND_MY_CREEPS, {
+      filter: (c) => {
+          return !c.memory.hasOwnProperty('flagName')
+          && c.memory.controllerId === this.room.controller.id
+          && c.memory.role === 'explorer'
+      }
+    });
+
+    if(roomExplorer.length < 1) {
+        if(allExplorer) { limit = allExplorer.length + 1; }
+    }
+  }
+  // If we have a tower we don't need an explorer in non stronghold rooms
+  else if (towers.length > 0 && !this.room.hasWalls()) {
+    limit = 0;
+  }
+
+  return this.spawnFor('explorer', {}, limit);
+};
+      body.push(MOVE);
+    }
 
   // Create a balanced body
   } else {

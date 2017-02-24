@@ -3,7 +3,7 @@ const {
   everyTicks
 } = require('util.helpers');
 
-StructureController.prototype.autoSpawnCreeps = function(claimFlags, defendFlags) {
+StructureController.prototype.autoSpawnCreeps = function(claimFlags, defendFlags, attackFlags) {
   let spawns = this.room.find(FIND_MY_SPAWNS);
 
   return spawns.reduce((creep, spawn) => {

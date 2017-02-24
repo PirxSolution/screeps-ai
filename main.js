@@ -21,6 +21,7 @@ module.exports.loop = function () {
   utilLoop.defendAndRepair();
 
   // TODO: Attack!
+  utilLoop.attack();
 
   // TODO: We should probably spawn at the end of the tick?!
   utilLoop.spawn();
