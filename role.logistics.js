@@ -10,13 +10,19 @@ module.exports = function() {
   let underAttack = this.room.underAttack();
 
   // Define the home
-  let home = Game.getObjectById(this.memory.controllerId).room.name;
+  let homeName = Game.getObjectById(this.memory.controllerId).room.name;
   // Define the claim
-  let claim = Game.getObjectById(this.memory.sourceId).room.name;
+  // TODO
+  let claimRoom = Game.getObjectById(this.memory.sourceId).room;
+  // We have to check if we have access to the claim
+  // Only lorry are having sourceId´s
+  if(claimRoom && this.memory.role == 'lorry') {
+    var claimName = claimRoom.name;
+  }
 
   // Rooms which are not home or claim become no energy supply
   // TODO: exeptions are thinkable
-  if(this.room.name === home || this.room.name == claim) {
+  if ([homeName, claimName].includes(this.room.name)) {
 
     // If we are NOT under attack priorise spawn and extensions
     if (_.isEmpty(target) && !underAttack) {
@@ -88,7 +94,7 @@ module.exports = function() {
     }
 
     // Do we have a storage? (only in HOME)
-    if (_.isEmpty(target) && this.room.name === home) {
+    if (_.isEmpty(target) && this.room.name === homeName) {
       target = this.room.storage;
     }
   }
