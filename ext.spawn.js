@@ -114,11 +114,11 @@ StructureSpawn.prototype.militaryComplex = function(defendFlags) {
         let limit = 2;
         let options = { flagName: flag.name };
 
-        let defenders = flag.room.find(FIND_MY_CREEPS, {
-          filter: c => c.isRole('defender')
+        let defenders = _.toArray(Game.creeps).filter( (c) => {
+            return c.isRole('defender') && c.memory.flagName === flag.name
         });
 
-        // If we already have enough defenders in the room
+        // If we already have enough defenders mapped on the flag
         if (defenders.length >= limit) {
           limit = 0;
         }
