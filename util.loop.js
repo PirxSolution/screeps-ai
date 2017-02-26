@@ -90,12 +90,12 @@ module.exports = {
 
             // We increase the added value by controller level
             if(room.controller.level == 4) {
-                let value = Math.floor((time / 4) / walls) * base;
+                let value = Math.floor((time / 8) / walls) * base;
 
                 room.memory.maxWallHits += value;
             }
             else if(room.controller.level >= 5) {
-                let value = Math.floor((time / 2) / walls) * base;
+                let value = Math.floor((time / 4) / walls) * base;
 
                 room.memory.maxWallHits += value;
             } else {
