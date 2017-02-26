@@ -1,3 +1,5 @@
+let actAsBuilder = require('role.builder');
+
 module.exports = function() {
   let flag = Game.flags[this.memory.flagName];
 
@@ -6,24 +8,30 @@ module.exports = function() {
       reusePath: 0
     });
   } else {
-    let target;  
-
-    if(flag.memory.radius == 0) {
+    if(flag.memory.fight) {
+        let target;
+    
+        if(flag.memory.radius == 0) {
+            if (_.isEmpty(target)) {
+                target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
+            }
+        } else {
+            let targets = flag.pos.findInRange(FIND_STRUCTURES, flag.memory.radius);
+            target = this.pos.findClosestByPath(targets);
+        }
+    
+        //this.do('attack', target);
+        if(this.dismantle(target) == ERR_NOT_IN_RANGE) {
+            this.moveTo(target);
+        }
+        
         if (_.isEmpty(target)) {
-            target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
+          this.moveTo(flag);
         }
     } else {
-        let targets = flag.pos.findInRange(FIND_STRUCTURES, 1);
-        target = this.pos.findClosestByPath(targets);
-    }
+        //let autoPilot = true;
 
-    //this.do('attack', target);
-    if(this.dismantle(target) == ERR_NOT_IN_RANGE) {
-        this.moveTo(target);
-    }
-    
-    if (_.isEmpty(target)) {
-      this.moveTo(flag);
+        //actAsBuilder.call(this, autoPilot);
     }
   }
 
