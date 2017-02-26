@@ -328,7 +328,7 @@ StructureSpawn.prototype.maintainLocalUpgrader = function() {
   let limit = level;
 
   //WIP: This can be refactored after finished adjusting
-  if(_.isEmpty(containers)) {
+  if(_.isEmpty(containers) && _.isEmpty(storage)) {
       limit = 0;
   } else {
     if (level == 2) {

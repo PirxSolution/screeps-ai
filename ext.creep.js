@@ -173,7 +173,7 @@ Creep.prototype.getEnergy = function(useContainer, useSource, options = {}) {
 Creep.prototype.collectDroppedEnergy = function() {
   let energy = this.pos.findInRange(FIND_DROPPED_ENERGY, 3)[0];
   
-  let value = this.carryCapacity / 100;
+  let value = this.carryCapacity / 10;
   value = value > 10 ? value : 10;
 
   if (energy && energy.amount > value) {
@@ -209,6 +209,11 @@ Creep.prototype.do = function(action, target, type = null) {
 
   return task;
 };
+
+Creep.prototype.moveSave = function(target, options) {
+    // at moment onlay for source keepers
+    //let path = this.room.findPath(this.pos, target.pos, [opts])
+}
 
 Creep.prototype.isRole = function(name) {
   return this.memory.role === name;

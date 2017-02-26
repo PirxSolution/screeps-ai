@@ -67,3 +67,11 @@ Room.prototype.underAttack = function() {
 Room.prototype.isStronghold = function() {
     return this.controller.level > 1 && this.controller.my && this.hasWalls()
 };
+
+Room.prototype.isKeeperRoom = function() {
+  let keeperLairs = this.find(FIND_STRUCTURES, {
+    filter: s => s.structureType === STRUCTURE_KEEPER_LAIR
+  });
+    
+  return !_.isEmpty(keeperLairs);
+}
