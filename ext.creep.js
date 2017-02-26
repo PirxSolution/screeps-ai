@@ -313,6 +313,11 @@ Creep.prototype.do = function(action, target, type = null, amount = null) {
   return task;
 };
 
+Creep.prototype.moveSave = function(target, options) {
+    // at moment onlay for source keepers
+    //let path = this.room.findPath(this.pos, target.pos, [opts])
+}
+
 Creep.prototype.isRole = function(name) {
   return this.memory.role === name;
 };
