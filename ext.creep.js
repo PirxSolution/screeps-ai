@@ -25,6 +25,9 @@ Creep.prototype.run = function() {
   let isWorking = this.memory.working;
   let energy = this.carry.energy;
 
+  // TODO: Every creep has to visit this every tick!
+  this.room.visitPosition(this);
+
   // This roles have special tasks and don't need the working flag
 
   // Defender - Run for it!
@@ -32,19 +35,19 @@ Creep.prototype.run = function() {
     defenderRun.call(this);
     return;
   }
-  
+
   // pawnSacrifice - Run for it!
   if (this.isRole('pawnSacrifice')) {
     pawnSacrificeRun.call(this);
     return;
   }
-  
+
   // melee - Run for it!
   if (this.isRole('melee')) {
     meleeRun.call(this);
     return;
   }
-  
+
   // melee - Run for it!
   if (this.isRole('destroyer')) {
     destroyerRun.call(this);
@@ -88,16 +91,13 @@ Creep.prototype.run = function() {
 
     // Get energy from container and source
     if (['builder', 'upgrader'].includes(role)) {
-      this.getEnergy(true, false, { flag: COLOR_GREEN });
+
+      this.getEnergy(true, false);
 
     // Get energy from container and source
     // TODO: It should take the closest!
-    } else if (role === 'explorer') {
+    } else if (['explorer', 'logistics'].includes(role)) {
       this.getEnergy(true, true);
-
-    // Get energy from source
-    } else if (role === 'logistics') {
-      this.getEnergy(false, true);
 
     // Get energy from container
     } else if (role === 'lorry') {
@@ -116,24 +116,31 @@ Creep.prototype.getEnergy = function(useContainer, useSource, options = {}) {
 
   // if the Creep should look for containers
   if (useContainer) {
-    let { flag } = options;
+
+    let { containerId } = options;
 
     // Aka lorries
-    if (options.containerId) {
-      container = Game.getObjectById(options.containerId);
+    if (containerId) {
+      container = Game.getObjectById(containerId);
 
     // find closest container
     } else {
+      const soloContainerIds = this.room.memory.soloContainerIds;
+
       container = this.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (s) => {
           let match = [
               STRUCTURE_CONTAINER,
               STRUCTURE_STORAGE
-            ].includes(s.structureType) && s.store[RESOURCE_ENERGY] >= this.carryCapacity;
 
-          // If we should use a flagged container
-          if (options.flag) {
-            return match && s.hasFlag(options.flag);
+            ].includes(s.structureType) && s.store[RESOURCE_ENERGY] > 0;
+
+          // Only get energy from solo containers
+          if (
+            !['explorer', 'logistics'].includes(this.memory.role) &&
+            s.structureType === STRUCTURE_CONTAINER
+          ) {
+            return match && soloContainerIds.includes(s.id);
           } else {
             return match;
           }
@@ -150,7 +157,7 @@ Creep.prototype.getEnergy = function(useContainer, useSource, options = {}) {
         let yellowFlag = container.pos.findClosestFlag(COLOR_YELLOW);
 
         if (yellowFlag && !this.pos.isEqualTo(yellowFlag.pos)) {
-          this.moveTo(flag);
+          this.moveTo(yellowFlag);
         }
       }
 
@@ -172,7 +179,7 @@ Creep.prototype.getEnergy = function(useContainer, useSource, options = {}) {
 
 Creep.prototype.collectDroppedEnergy = function() {
   let energy = this.pos.findInRange(FIND_DROPPED_ENERGY, 3)[0];
-  
+
   let value = this.carryCapacity / 10;
   value = value > 10 ? value : 10;
 

@@ -1,6 +1,9 @@
 module.exports = function() {
   let flag = Game.flags[this.memory.flagName];
 
+  // No more emails of dying creeps
+  // this.notifyWhenAttacked(false);
+
   if (flag && flag.pos.roomName !== this.room.name) {
     this.moveTo(flag, {
       reusePath: 0
@@ -9,11 +12,12 @@ module.exports = function() {
     // TODO: Add heal logic
     target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
 
-    // if (_.isEmpty(target)) {
-    //   // STRUCTURE_WALL
-    //   let t = flag.pos.lookFor(LOOK_STRUCTURES);
-    //   console.log(JSON.stringify(t));
-    // }
+    if (_.isEmpty(target)) {
+      target = flag
+        .pos
+        .lookFor(LOOK_STRUCTURES)
+        .find((s) => s.structureType === STRUCTURE_WALL);
+    }
 
     if (_.isEmpty(target)) {
       target = this.pos.findClosestByRange(FIND_HOSTILE_SPAWNS);
@@ -26,9 +30,9 @@ module.exports = function() {
             }
         })[0];
         this.moveTo(flag);
+        return;
     }
 
     this.do('attack', target);
   }
-
 };
