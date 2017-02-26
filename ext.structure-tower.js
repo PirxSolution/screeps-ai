@@ -33,7 +33,6 @@ StructureTower.prototype.defend = function() {
   if (target) {
     this.attack(target);
   } else {
-
     // Heal
     let target = this.room.find(FIND_MY_CREEPS, {
         filter: (creep) => {return creep.hits < creep.hitsMax && this.pos.getRangeTo(creep) <= 35}

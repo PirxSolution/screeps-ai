@@ -32,6 +32,21 @@ module.exports = {
 
     // Cleanup memory
     this.cleanup();
+
+    // Room information
+      _
+        .values(Game.rooms)
+        .forEach((room) => {
+          everyTicks(100, () => {
+            // Street maps
+            room.drawStreetMap();
+            // Structural data
+            room.updateStructuralData();
+          });
+
+          // Lorries
+          room.optimizeSourceContainers();
+        });
   },
 
   // Spawn
@@ -50,8 +65,8 @@ module.exports = {
     // Then we autoSpawnCreeps
     controlledRooms.forEach((room) => {
       room.controller.autoSpawnCreeps(
-        this.claims, 
-        this.defendFlags, 
+        this.claims,
+        this.defendFlags,
         this.attackFlags
       );
     });

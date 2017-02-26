@@ -57,46 +57,20 @@ module.exports = function() {
       });
     }
 
-    // Do we have a container
+    // Do we have a storage?
     if (_.isEmpty(target)) {
-      let targets = [];
-
-      // How much free capacity must the container have
-      let amount = this.carry[RESOURCE_ENERGY] + this.carry[RESOURCE_ENERGY] / 3;
-
-      // Do we have a container next to the spawn
-      // TODO: Revisit when we have 2 spawns
-      if (this.room.hasSpawns()) {
-        let spawn = this.room.spawns()[0];
-        let containers = spawn.nearContainers();
-
-        let selection = containerWithCapacity(containers, amount);
-
-        if(selection) {
-            targets.push(selection);
-        }
-      }
-
-      // Do we have a container next to the controller
-      let containers = this.room.controller.nearContainers(4);
-
-      let selection = containerWithCapacity(containers, amount);
-
-      if(selection) {
-        targets.push(selection);
-      }
-
-      // Select the nearest container
-      if (_.isEmpty(target) && !_.isEmpty(targets)) {
-        target = this.pos.findClosestByPath(targets);
-      }
-    }
-
-    // Do we have a storage? (only in HOME)
-    if (_.isEmpty(target) && this.room.name === homeName) {
       target = this.room.storage;
     }
-  }
+
+    // Do we have solo containers - kind of in room logistics
+    const soloContainerIds = this.room.memory.soloContainerIds;
+
+    if (_.isEmpty(target) && !_.isEmpty(soloContainerIds)) {
+      let soloContainers = this.room.containers()
+        .filter((c) => soloContainerIds.includes(c.id));
+
+      target = containerWithCapacity(soloContainers);
+    }
 
   /*
    Remote - Long distance (other room)
@@ -109,6 +83,21 @@ module.exports = function() {
     // Find the room
     if (controller && controller.pos && controller.pos.roomName !== this.room.name) {
       this.moveTo(controller, {
+        reusePath: 10
+      });
+
+      return;
+    }
+  }
+
+  // Support home spawn
+  if (_.isEmpty(target)) {
+    let spawn = Game.getObjectById(this.memory.spawnId);
+    spawn = Game.getObjectById(spawn.memory.spawnId);
+
+    // Find the room
+    if (spawn && spawn.pos.roomName !== this.room.name) {
+      this.moveTo(spawn, {
         reusePath: 10
       });
 

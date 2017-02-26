@@ -49,7 +49,7 @@ StructureSpawn.prototype.autoSpawnCreeps = function(claimFlags, defendFlags, att
   newCreep = this.maintainLocalBuilder();
   if (newCreep) { return newCreep; }
 
-  // Builder
+  // Upgrader
   newCreep = this.maintainLocalUpgrader();
   if (newCreep) { return newCreep; }
 
@@ -368,6 +368,7 @@ StructureSpawn.prototype.claimColonies = function(claimFlags) {
         // If the flag is owned by another controller we don't care
         if (flag.memory.controllerId
         && flag.memory.controllerId !== this.room.controller.id) {
+
           return creep;
         }
 
@@ -376,6 +377,16 @@ StructureSpawn.prototype.claimColonies = function(claimFlags) {
           flag.room &&
           flag.room.controller.my &&
           !flag.room.controller.reservation
+        ) {
+          return creep;
+        }
+
+        // If we have more than 2000 ticks we don't care
+        if (
+          flag.room &&
+          flag.room.controller.reservation &&
+          flag.room.controller.reservation.username === 'pirx' &&
+          flag.room.controller.reservation.ticksToEnd > 2000
         ) {
           return creep;
         }
@@ -409,7 +420,9 @@ StructureSpawn.prototype.maintainRemoteExplorer = function(claimFlags) {
           limit += 1;
         }
 
-        // If flag secondary is GREEN => increase
+        // TODO: check for construction sites
+
+        // If we have are GREEN => increase
         if (flag.secondaryColor === COLOR_GREEN) {
           limit += 1;
 
@@ -481,34 +494,41 @@ StructureSpawn.prototype.maintainRemoteMining = function(claimFlags) {
 // Mining
 StructureSpawn.prototype.spawnForMining = function(source, limits = {}) {
   let creep = null;
-  let container = source.nearContainers()[0];
+  let {
+    containerId,
+    needsLorry,
+    sourceId
+  } = source.room.miningInformationFor(source);
 
   // No container => nothing to spawn
-  if (!container) { return creep; }
+  if (!containerId) { return creep; }
 
+  // TODO: add remote information
   let options = {
-    sourceId: source.id,
-    containerId: container.id
+    sourceId,
+    containerId
   };
 
   // if the source has no miner
   creep = this.spawnFor('miner', options, limits.miner);
   if (creep) { return creep; }
 
-  // TODO: To make it more efficient for remote containers we need to call this more often, change the limit. But first we need to know if we are local or remote!
-  // if the container is at max capacity for 200 ticks
-  this.rememberToFor(
-    () => limits.lorry += 1,
-    container.isFullOf(RESOURCE_ENERGY),
-    {
-      key: 'containerNeedsLorryCount',
-      id: container.id,
-      limit: 200
-    }
-  );
+  // If the source requested a lorry we increase
+  if (needsLorry) { limits.lorry += 1; }
 
   // if the source has no lorry
   creep = this.spawnFor('lorry', options, limits.lorry);
+
+  // It's not 100% safe. It might be the case that we need to spawn a lorry anyway and this one is not the extra one we need...
+  if (
+    needsLorry &&
+    creep &&
+    Game.creeps[creep].isRole('lorry') &&
+    Game.creeps[creep].memory.sourceId === sourceId
+  ) {
+    source.room.shippingLorryFor(source);
+  }
+
   if (creep) { return creep; }
 
   return creep;
@@ -567,6 +587,7 @@ const maxEnergyForBalancedCreepMap = new Map([
 StructureSpawn.prototype.bodyFor = function(role, options) {
   const level = this.room.controller.level;
   const energyCapacityAvailable = this.room.energyCapacityAvailable;
+
   const blueprintsForRole = creepBlueprints[role];
 
   let body;
@@ -653,7 +674,6 @@ StructureSpawn.prototype.bodyFor = function(role, options) {
   } else if (role === 'claimer') {
     if (energyCapacityAvailable < 1300) {
       body = [CLAIM, MOVE]; // 650
-
     // If we can build the bigger creap we do
     } else {
       body = [CLAIM, CLAIM, MOVE, MOVE]; // 1300
@@ -674,6 +694,7 @@ StructureSpawn.prototype.bodyFor = function(role, options) {
     for (let i = 0; i < parts; i++) {
       body.push(TOUGH);
     }
+
     // COMMIT: better positioning of attack parts (fight until the end)
     // TODO: code it pirx!
 
