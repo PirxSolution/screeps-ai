@@ -1,60 +1,46 @@
 module.exports = function() {
   this.notifyWhenAttacked(false);
-    
+
+  let allowedDamageValue = 300;
+  let damage = this.hitsMax - this.hits;
+
   let flag = Game.flags[this.memory.flagName];
-  let withdrawalPosition = Game.flags[flag.memory.tacticalWithdrawalTo];
-  
+  let withdrawalFlag = Game.flags[flag.memory.tacticalWithdrawalTo];
+
+  const phase = flag.memory.tacticalPhase;
+
   let target;
-  
-  let value = 150;
-  
-  if(flag.memory.tacticalPhase == 1) { 
-    if (withdrawalPosition.pos.roomName !== this.room.name) {
-      this.moveTo(withdrawalPosition);
+
+  // TODO: They don't attack right now
+  if (phase === 1) {
+    target = withdrawalFlag;
+
+  } else {
+    // Wir sind im arsch
+    if (damage >= allowedDamageValue) {
+      target = withdrawalFlag;
     } else {
-      this.moveTo(withdrawalPosition);  
+      target = flag;
     }
   }
-  else if(flag.memory.tacticalPhase == 2) {
-    // this.moveTo(flag);
-    if (flag.pos.roomName !== this.room.name) {
-        // in friendly room
-        target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        
-        if(_.isEmpty(target)) {
-            if(this.hits - this.hitsMax <= -value) {
-                this.moveTo(withdrawalPosition);
-            } else if(this.hits == this.hitsMax) {
-                this.moveTo(flag);
-            }
-        } else {
-            this.do('attack', target);
-        }
-    } else {
-        // in the enemy room
-        target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        if(this.hits - this.hitsMax > -value && this.hits - this.hitsMax < 0) {
-            this.moveTo(withdrawalPosition);
-            this.attack(target);
-        } else {
-            if(_.isEmpty(target)) {
-                this.moveTo(flag);
-            } else {
-                this.do('attack', target);
-            }
-        }
-    }
+
+  let hostileCreeps = this.room.findEnemies();
+  let enemies = target.pos.findInRange(hostileCreeps, 48);
+  let enemy = this.pos.findClosestByRange(enemies);
+
+  // Everyone in the room but no enemy
+  if (phase === 3 && _.isEmpty(enemy)) {
+    //TODO: this includes attacks against allies
+    let enemies = flag.pos.findInRange(FIND_STRUCTURES, 1);
+    enemy = this.pos.findClosestByPath(enemies);
   }
-  else if(flag.memory.tacticalPhase == 3) { 
-    if (withdrawalPosition.pos.roomName !== this.room.name) {
-      this.moveTo(withdrawalPosition);
-    } else {
-        target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        if(_.isEmpty(target)) {
-            this.moveTo(withdrawalPosition);
-        } else {
-            this.do('attack', target);
-        }
-    }
+
+  // Right next to you!
+  this.attack(enemy);
+
+  if (_.isEmpty(enemy)) {
+    this.moveTo(target);
+  } else {
+    this.do('attack', enemy);
   }
 };

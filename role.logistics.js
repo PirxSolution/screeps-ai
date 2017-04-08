@@ -1,3 +1,4 @@
+let actAsDistributor = require('role.distributor');
 let actAsBuilder = require('role.builder');
 
 module.exports = function() {
@@ -7,62 +8,72 @@ module.exports = function() {
    Local - (same room)
   */
 
-  let underAttack = this.room.underAttack();
+  // Define the home
+  let homeName = Game.getObjectById(this.memory.controllerId).room.name;
+  // Define the claim
+  let claimName;
+  let source = Game.getObjectById(this.memory.sourceId);
+  // Only lorries have sourceIds
+  if (source && source.room && this.isRole('lorry')) {
+    claimName = source.room.name;
+  }
 
- // Define the home
- let homeName = Game.getObjectById(this.memory.controllerId).room.name;
- // Define the claim
- let claimName;
- let source = Game.getObjectById(this.memory.sourceId);
- // Only lorry are having sourceIds
- if (source && source.room && this.isRole('lorry')) {
-   claimName = source.room;
- }
+  // Rooms which are not home or claim become no energy supply
+  // HOME Room
+  if(this.room.name === homeName) {
+    let hasDistributor = function(room) {
+      return !_.isEmpty(room.find(FIND_MY_CREEPS).filter((c) => c.memory.role === 'distributor'));
+    };
 
- // Rooms which are not home or claim become no energy supply
- // TODO: exeptions are thinkable
- if ([homeName, claimName].includes(this.room.name)) {
-
-    // If we are NOT under attack priorise spawn and extensions
-    if (_.isEmpty(target) && !underAttack) {
-      target = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-        filter: (s) => {
-          return [
-            STRUCTURE_SPAWN,
-            STRUCTURE_EXTENSION,
-          ].includes(s.structureType) && s.energy < s.energyCapacity
-        }
-      });
+    let isLocalLogistic = function(creep) {
+      // TODO: refactor
+      let creepsSource = Game.getObjectById(creep.memory.sourceId)
+      return creep.room.find(FIND_SOURCES).includes(creepsSource);
     }
 
-    // Towers need energy - the tower manages its energy level
-    if (_.isEmpty(target)) {
-      target = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-        filter: (s) => {
-          return s.structureType === STRUCTURE_TOWER &&
-            s.energy < s.energyCapacity * s.engergyFactor;
-        }
-      });
+    // act as distributor if creep is local logistic
+    // or for all remote logistics, if there is no distributor in home room
+    if((!hasDistributor(this.room) || isLocalLogistic(this))) {
+      actAsDistributor.call(this);
     }
+    // transport the energy on fast way
+    else {
+      // TODO: Why returns this snippet realy stange results?
+
+      // only check for targets in range
+      // let test = this.pos.findInRange(FIND_MY_STRUCTURES, 1, {
+      //   filter: (s) => {
+      //     return [
+      //       STRUCTURE_SPAWN,
+      //       STRUCTURE_EXTENSION,
+      //       STRUCTURE_TOWER
+      //     ].includes(s.structureType) && s.energy < s.energyCapacity - 49
+      //   }
+      // }[0]);
+
+      // and bring the energy to storage
+      if(_.isEmpty(target)) {
+        target = this.room.storage;
+      }
+    }
+  }
+  // CLAIM Room
+  else if(this.room.name === claimName) {
+    // TODO: This needs a complete review
 
     // Spawns and extensions
-    if (_.isEmpty(target)) {
-      target = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-        filter: (s) => {
-          return [
-            STRUCTURE_SPAWN,
-            STRUCTURE_EXTENSION,
-          ].includes(s.structureType) && s.energy < s.energyCapacity
-        }
-      });
-    }
+    // if (_.isEmpty(target)) {
+    //   target = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+    //     filter: (s) => {
+    //       return [
+    //         STRUCTURE_SPAWN,
+    //         STRUCTURE_EXTENSION,
+    //       ].includes(s.structureType) && s.energy < s.energyCapacity
+    //     }
+    //   });
+    // }
 
-    // Do we have a storage?
-    if (_.isEmpty(target)) {
-      target = this.room.storage;
-    }
-
-    // Do we have solo containers - kind of in room logistics
+    // fill solo containers with energy
     const soloContainerIds = this.room.memory.soloContainerIds;
 
     if (_.isEmpty(target) && !_.isEmpty(soloContainerIds)) {
@@ -71,6 +82,7 @@ module.exports = function() {
 
       target = containerWithCapacity(soloContainers);
     }
+  }
 
   /*
    Remote - Long distance (other room)
@@ -90,26 +102,12 @@ module.exports = function() {
     }
   }
 
-  // Support home spawn
-  if (_.isEmpty(target)) {
-    let spawn = Game.getObjectById(this.memory.spawnId);
-    spawn = Game.getObjectById(spawn.memory.spawnId);
-
-    // Find the room
-    if (spawn && spawn.pos.roomName !== this.room.name) {
-      this.moveTo(spawn, {
-        reusePath: 10
-      });
-
-      return;
-    }
-  }
-
   // if we have a target lets transfer
   if (!_.isEmpty(target)) {
     this.do('transfer', target, RESOURCE_ENERGY);
   } else {
-    actAsBuilder.call(this);
+    //TODO: why does this make problems?
+    //actAsBuilder.call(this);
   }
 };
 
