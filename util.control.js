@@ -1,31 +1,47 @@
 module.exports = {
   config() {
-    global.ME = 'fsmanuel';
-    global.allies = [global.me, 'pirx'];
+    global.ME = 'pirx';
+    global.allies = [global.me, 'fsmanuel'];
 
     const empire = {
-      W82N3: {
+      W83N9: {
         defense: {
-          finalWallHits: 5000000,
+          finalWallHits: 50000000,
           explorerEfficiency: 0.65
         }
       },
-      W82N4: {
+      W82N8: {
         defense: {
-          finalWallHits: 5000000,
-          explorerEfficiency: 0.9
+          finalWallHits: 50000000,
+          explorerEfficiency: 0.5
         }
       },
-      W81N5: {
+      W83N6: {
         defense: {
-          finalWallHits: 5000000,
-          explorerEfficiency: 0.9
+          finalWallHits: 20000000,
+          explorerEfficiency: 0.7
         }
       },
-      W83N2: {
+      W81N7: {
         defense: {
-          finalWallHits: 500000,
-          explorerEfficiency: 0.6
+          finalWallHits: 1000000,
+          explorerEfficiency: 0.55
+        }
+      },
+      W84N7: {
+        economy: {
+          reserve: 100000,
+          explorerEfficiency: 0.5
+        }
+      },
+      W82N7: {
+        economy: {
+          reserve: 100000
+        }
+      },
+      W83N8: {
+        economy: {
+          reserve: 100000
         }
       }
     };
@@ -36,7 +52,7 @@ module.exports = {
 
       options = _.assign({
         wallUpgradeTime: 400,
-        finalWallHits: 10000000,
+        finalWallHits: 1000000,
         wallContainer: true,
         explorerCount: 1,
         explorerEfficiency: 0.5,
