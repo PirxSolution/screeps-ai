@@ -47,9 +47,7 @@ module.exports = {
     };
 
     for(let colony of Object.keys(empire)) {
-      /* SETUP */
       let options;
-
       options = _.assign({
         wallUpgradeTime: 400,
         finalWallHits: 1000000,
