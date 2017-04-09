@@ -199,16 +199,16 @@ Room.prototype.visitPosition = function(creep) {
 };
 
 Room.prototype.drawStreetMap = function() {
-  if (this.name !== 'W83N6') { return; }
-  _
-  .forEach(this.memory.streetMap, (value, x) => {
-    _.forEach(value, (value, y) => {
-      this.visual.rect(parseInt(x) - 0.5, parseInt(y) - 0.5, 1, 1, {
-        fill: 'red',
-        opacity: value / 50
-      })
-    })
-  })
+  // if (this.name !== 'W83N6') { return; }
+  // _
+  // .forEach(this.memory.streetMap, (value, x) => {
+  //   _.forEach(value, (value, y) => {
+  //     this.visual.rect(parseInt(x) - 0.5, parseInt(y) - 0.5, 1, 1, {
+  //       fill: 'red',
+  //       opacity: value / 50
+  //     })
+  //   })
+  // })
 };
 
 Room.prototype.optimizeSourceContainers = function() {
