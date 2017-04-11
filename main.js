@@ -1,5 +1,4 @@
 // Extends
-require('ext.controller');
 require('ext.creep');
 require('ext.room');
 require('ext.room-object');
